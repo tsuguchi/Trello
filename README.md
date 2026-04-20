@@ -2,6 +2,8 @@
 
 Trello風のカンバン方式タスク管理ツール。React + TypeScript + Firebase で作成。
 
+**🌐 ライブデモ:** https://trello-27820.web.app
+
 ## 主な機能（予定）
 
 - [ ] ユーザー登録・ログイン（メール/パスワード）
@@ -46,4 +48,14 @@ npm run dev      # 開発サーバー（http://localhost:5173）
 npm run build    # 本番ビルド
 npm run preview  # ビルド後のプレビュー
 npm run lint     # ESLintチェック
+```
+
+## デプロイ
+
+Firebase Hostingを使用。
+
+```bash
+npx firebase login       # 初回のみ
+npm run build
+npx firebase deploy      # ホスティング + Firestore ルールを同時デプロイ
 ```
