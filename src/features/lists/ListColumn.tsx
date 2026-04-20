@@ -110,7 +110,10 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
         items={visibleCards.map((c) => c.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div ref={setNodeRef} className="space-y-2 mb-2 min-h-[20px]">
+        <div
+          ref={setNodeRef}
+          className="space-y-2 mb-2 min-h-[20px] sm:max-h-[60vh] sm:overflow-y-auto sm:pr-1"
+        >
           {visibleCards.map((card) => (
             <CardItem
               key={card.id}

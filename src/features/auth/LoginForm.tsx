@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../../lib/firebase'
+import { translateAuthError } from './errors'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
@@ -16,7 +17,7 @@ export function LoginForm() {
     try {
       await signInWithEmailAndPassword(auth, email, password)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'ログインに失敗しました')
+      setError(translateAuthError(err))
     } finally {
       setSubmitting(false)
     }

@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from '../../lib/firebase'
+import { translateAuthError } from './errors'
 
 export function SignUpForm() {
   const [displayName, setDisplayName] = useState('')
@@ -23,7 +24,7 @@ export function SignUpForm() {
         createdAt: serverTimestamp(),
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : '登録に失敗しました')
+      setError(translateAuthError(err))
     } finally {
       setSubmitting(false)
     }
