@@ -1,6 +1,7 @@
-import type { MouseEvent } from 'react'
+import { useState, type MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { deleteBoard } from './api'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import type { Board } from '../../types'
 
 type Props = {
@@ -9,11 +10,18 @@ type Props = {
 
 export function BoardList({ boards }: Props) {
   const navigate = useNavigate()
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
-  async function handleDelete(e: MouseEvent, boardId: string) {
+  function requestDelete(e: MouseEvent, boardId: string) {
     e.stopPropagation()
-    if (!confirm('このボードを削除しますか？')) return
-    await deleteBoard(boardId)
+    setConfirmingId(boardId)
+  }
+
+  async function handleConfirmDelete() {
+    if (!confirmingId) return
+    const id = confirmingId
+    setConfirmingId(null)
+    await deleteBoard(id)
   }
 
   if (boards.length === 0) {
@@ -25,23 +33,33 @@ export function BoardList({ boards }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {boards.map((board) => (
-        <div
-          key={board.id}
-          onClick={() => navigate(`/boards/${board.id}`)}
-          className="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4 cursor-pointer group relative"
-        >
-          <h2 className="font-semibold text-slate-800">{board.title}</h2>
-          <button
-            onClick={(e) => handleDelete(e, board.id)}
-            aria-label="削除"
-            className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {boards.map((board) => (
+          <div
+            key={board.id}
+            onClick={() => navigate(`/boards/${board.id}`)}
+            className="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4 cursor-pointer group relative"
           >
-            ✕
-          </button>
-        </div>
-      ))}
-    </div>
+            <h2 className="font-semibold text-slate-800">{board.title}</h2>
+            <button
+              onClick={(e) => requestDelete(e, board.id)}
+              aria-label="削除"
+              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {confirmingId && (
+        <ConfirmDialog
+          message="このボードを削除しますか？配下のリストとカードも全て削除されます。"
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmingId(null)}
+        />
+      )}
+    </>
   )
 }

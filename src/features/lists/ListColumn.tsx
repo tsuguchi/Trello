@@ -8,6 +8,7 @@ import { deleteList, updateListTitle } from './api'
 import { createCard } from '../cards/api'
 import { CardItem } from '../cards/CardItem'
 import { CardDetailModal } from '../cards/CardDetailModal'
+import { ConfirmDialog } from '../../components/ConfirmDialog'
 import type { Card, List } from '../../types'
 
 type Props = {
@@ -29,6 +30,7 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
   const [adding, setAdding] = useState(false)
   const [cardTitle, setCardTitle] = useState('')
   const [editingCardId, setEditingCardId] = useState<string | null>(null)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const { setNodeRef } = useDroppable({
     id: `list-${list.id}`,
@@ -52,8 +54,8 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
     setEditing(false)
   }
 
-  async function handleDelete() {
-    if (!confirm(`リスト「${list.title}」を削除しますか？`)) return
+  async function handleConfirmDelete() {
+    setConfirmingDelete(false)
     await deleteList(boardId, list.id)
   }
 
@@ -98,7 +100,7 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
           </h3>
         )}
         <button
-          onClick={handleDelete}
+          onClick={() => setConfirmingDelete(true)}
           aria-label="リスト削除"
           className="text-slate-400 hover:text-red-600 px-1 py-1"
         >
@@ -175,6 +177,14 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
           listId={list.id}
           card={editingCard}
           onClose={() => setEditingCardId(null)}
+        />
+      )}
+
+      {confirmingDelete && (
+        <ConfirmDialog
+          message={`リスト「${list.title}」を削除しますか？`}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmingDelete(false)}
         />
       )}
     </div>
