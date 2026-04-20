@@ -2,6 +2,7 @@ import { signOut } from 'firebase/auth'
 import { auth } from './lib/firebase'
 import { useAuth } from './hooks/useAuth'
 import { AuthPage } from './pages/AuthPage'
+import { BoardsPage } from './pages/BoardsPage'
 
 function App() {
   const { user, loading } = useAuth()
@@ -33,9 +34,7 @@ function App() {
         </div>
       </header>
       <main className="p-6">
-        <p className="text-slate-500">
-          ログイン成功！ここにボード一覧が入ります（次のフェーズで実装）
-        </p>
+        <BoardsPage />
       </main>
     </div>
   )
