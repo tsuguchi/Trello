@@ -1,13 +1,15 @@
 import type { MouseEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { deleteBoard } from './api'
 import type { Board } from '../../types'
 
 type Props = {
   boards: Board[]
-  onSelect?: (boardId: string) => void
 }
 
-export function BoardList({ boards, onSelect }: Props) {
+export function BoardList({ boards }: Props) {
+  const navigate = useNavigate()
+
   async function handleDelete(e: MouseEvent, boardId: string) {
     e.stopPropagation()
     if (!confirm('このボードを削除しますか？')) return
@@ -27,7 +29,7 @@ export function BoardList({ boards, onSelect }: Props) {
       {boards.map((board) => (
         <div
           key={board.id}
-          onClick={() => onSelect?.(board.id)}
+          onClick={() => navigate(`/boards/${board.id}`)}
           className="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4 cursor-pointer group relative"
         >
           <h2 className="font-semibold text-slate-800">{board.title}</h2>
