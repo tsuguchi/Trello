@@ -1,54 +1,41 @@
 rules_version = '2';
 
 // ========================================
-// 開発用ルール（Phase 1 開発中）
+// 本番用ルール
 // ========================================
-// ログイン済みユーザーなら全データを読み書き可能。
-// Phase 1 完成後、下の「本番用ルール」に差し替える。
-//
-// このルールを Firebase Console の
-// Firestore Database > ルール タブに貼り付けて「公開」する。
+// - users: 自分のユーザー情報だけ読み書きできる
+// - boards: ownerId が自分のボードだけ読み書きできる
+//           作成時は ownerId を自分に固定
+//           更新時も ownerId の変更を禁止（所有権移譲なし）
+// - lists, cards: 親ボードの所有者だけ読み書きできる
 // ========================================
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+                          && request.auth.uid == userId;
+    }
+
+    match /boards/{boardId} {
+      allow create: if request.auth != null
+                     && request.resource.data.ownerId == request.auth.uid;
+      allow read, delete: if request.auth != null
+                          && resource.data.ownerId == request.auth.uid;
+      allow update: if request.auth != null
+                     && resource.data.ownerId == request.auth.uid
+                     && request.resource.data.ownerId == request.auth.uid;
+
+      match /lists/{listId} {
+        allow read, write: if request.auth != null
+                            && get(/databases/$(database)/documents/boards/$(boardId)).data.ownerId == request.auth.uid;
+
+        match /cards/{cardId} {
+          allow read, write: if request.auth != null
+                              && get(/databases/$(database)/documents/boards/$(boardId)).data.ownerId == request.auth.uid;
+        }
+      }
     }
   }
 }
-
-// ========================================
-// 本番用ルール（Phase 1 完成後にこちらへ差し替え）
-// ========================================
-// - users: 自分のユーザー情報だけ読み書きできる
-// - boards: ownerId が自分のボードだけ読み書きできる
-// - lists, cards: 親ボードにアクセスできる人だけ読み書きできる
-// ========================================
-//
-// service cloud.firestore {
-//   match /databases/{database}/documents {
-//
-//     match /users/{userId} {
-//       allow read, write: if request.auth != null
-//                           && request.auth.uid == userId;
-//     }
-//
-//     match /boards/{boardId} {
-//       allow read, write: if request.auth != null
-//                           && resource.data.ownerId == request.auth.uid;
-//       allow create: if request.auth != null
-//                      && request.resource.data.ownerId == request.auth.uid;
-//
-//       match /lists/{listId} {
-//         allow read, write: if request.auth != null
-//                             && get(/databases/$(database)/documents/boards/$(boardId)).data.ownerId == request.auth.uid;
-//
-//         match /cards/{cardId} {
-//           allow read, write: if request.auth != null
-//                               && get(/databases/$(database)/documents/boards/$(boardId)).data.ownerId == request.auth.uid;
-//         }
-//       }
-//     }
-//   }
-// }
