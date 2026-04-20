@@ -24,6 +24,7 @@ export function BoardPage() {
   const cardsByListId = useBoardCards(boardId, listIds)
   const [adding, setAdding] = useState(false)
   const [title, setTitle] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -137,7 +138,16 @@ export function BoardPage() {
       >
         ← ボード一覧に戻る
       </Link>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">{board.title}</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h1 className="text-2xl font-bold text-slate-800">{board.title}</h1>
+        <input
+          type="search"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="カードを検索"
+          className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full sm:w-64"
+        />
+      </div>
 
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="flex flex-col sm:flex-row gap-4 sm:overflow-x-auto pb-4 items-start">
@@ -147,6 +157,7 @@ export function BoardPage() {
               boardId={boardId!}
               list={list}
               cards={cardsByListId[list.id] ?? []}
+              searchTerm={searchTerm}
             />
           ))}
 

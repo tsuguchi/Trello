@@ -44,6 +44,7 @@ type CardUpdates = {
   description?: string
   labels?: Label[]
   order?: number
+  dueDate?: Date | null
 }
 
 export async function updateCard(

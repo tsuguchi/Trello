@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
 import { updateCard } from './api'
+import {
+  formatDueDateInput,
+  parseDueDateInput,
+} from './dueDate'
 import type { Card, Label } from '../../types'
 
 const PREDEFINED_LABELS: Label[] = [
@@ -53,6 +57,15 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
     await updateCard(boardId, listId, card.id, { labels: newLabels })
   }
 
+  async function changeDueDate(value: string) {
+    const parsed = parseDueDateInput(value)
+    await updateCard(boardId, listId, card.id, { dueDate: parsed })
+  }
+
+  async function clearDueDate() {
+    await updateCard(boardId, listId, card.id, { dueDate: null })
+  }
+
   return (
     <div
       onClick={onClose}
@@ -100,6 +113,27 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
                 </button>
               )
             })}
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <h4 className="text-sm font-semibold text-slate-600 mb-2">期日</h4>
+          <div className="flex gap-2">
+            <input
+              type="date"
+              value={formatDueDateInput(card.dueDate)}
+              onChange={(e) => changeDueDate(e.target.value)}
+              className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            />
+            {card.dueDate && (
+              <button
+                type="button"
+                onClick={clearDueDate}
+                className="text-sm text-slate-500 hover:text-red-600"
+              >
+                削除
+              </button>
+            )}
           </div>
         </div>
 

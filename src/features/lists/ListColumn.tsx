@@ -14,9 +14,16 @@ type Props = {
   boardId: string
   list: List
   cards: Card[]
+  searchTerm?: string
 }
 
-export function ListColumn({ boardId, list, cards }: Props) {
+export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
+  const visibleCards = searchTerm.trim()
+    ? cards.filter((c) =>
+        c.title.toLowerCase().includes(searchTerm.trim().toLowerCase()),
+      )
+    : cards
+
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(list.title)
   const [adding, setAdding] = useState(false)
@@ -100,11 +107,11 @@ export function ListColumn({ boardId, list, cards }: Props) {
       </div>
 
       <SortableContext
-        items={cards.map((c) => c.id)}
+        items={visibleCards.map((c) => c.id)}
         strategy={verticalListSortingStrategy}
       >
         <div ref={setNodeRef} className="space-y-2 mb-2 min-h-[20px]">
-          {cards.map((card) => (
+          {visibleCards.map((card) => (
             <CardItem
               key={card.id}
               boardId={boardId}

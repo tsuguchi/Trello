@@ -3,6 +3,11 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Card } from '../../types'
 import { deleteCard } from './api'
+import {
+  formatDueDateShort,
+  getDueBadgeClass,
+  getDueStatus,
+} from './dueDate'
 
 type Props = {
   boardId: string
@@ -59,6 +64,15 @@ export function CardItem({ boardId, listId, card, onClick }: Props) {
         </div>
       )}
       <p className="text-sm text-slate-800 pr-5">{card.title}</p>
+      {card.dueDate && (
+        <span
+          className={`inline-block mt-1 px-2 py-0.5 text-xs rounded ${getDueBadgeClass(
+            getDueStatus(card.dueDate),
+          )}`}
+        >
+          {formatDueDateShort(card.dueDate)}
+        </span>
+      )}
       <button
         onClick={handleDelete}
         onPointerDown={(e) => e.stopPropagation()}
