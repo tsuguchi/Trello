@@ -1,5 +1,9 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { deleteList, updateListTitle } from './api'
+import { createCard } from '../cards/api'
+import { CardItem } from '../cards/CardItem'
+import { CardDetailModal } from '../cards/CardDetailModal'
+import { useCards } from '../../hooks/useCards'
 import type { List } from '../../types'
 
 type Props = {
@@ -10,6 +14,14 @@ type Props = {
 export function ListColumn({ boardId, list }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(list.title)
+  const [adding, setAdding] = useState(false)
+  const [cardTitle, setCardTitle] = useState('')
+  const [editingCardId, setEditingCardId] = useState<string | null>(null)
+  const { cards } = useCards(boardId, list.id)
+
+  const editingCard = editingCardId
+    ? cards.find((c) => c.id === editingCardId) ?? null
+    : null
 
   function startEdit() {
     setDraft(list.title)
@@ -27,6 +39,22 @@ export function ListColumn({ boardId, list }: Props) {
   async function handleDelete() {
     if (!confirm(`リスト「${list.title}」を削除しますか？`)) return
     await deleteList(boardId, list.id)
+  }
+
+  async function handleAddCard(e: FormEvent) {
+    e.preventDefault()
+    const trimmed = cardTitle.trim()
+    if (!trimmed) return
+    const nextOrder =
+      cards.length > 0 ? Math.max(...cards.map((c) => c.order)) + 1 : 0
+    await createCard(boardId, list.id, trimmed, nextOrder)
+    setCardTitle('')
+    setAdding(false)
+  }
+
+  function cancelAdd() {
+    setAdding(false)
+    setCardTitle('')
   }
 
   return (
@@ -62,13 +90,69 @@ export function ListColumn({ boardId, list }: Props) {
         </button>
       </div>
 
-      <div className="space-y-2 mb-2 min-h-[10px]">
-        {/* カードは次のフェーズで追加 */}
+      <div className="space-y-2 mb-2">
+        {cards.map((card) => (
+          <CardItem
+            key={card.id}
+            boardId={boardId}
+            listId={list.id}
+            card={card}
+            onClick={() => setEditingCardId(card.id)}
+          />
+        ))}
       </div>
 
-      <button className="text-left text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-300 rounded px-2 py-1">
-        + カードを追加
-      </button>
+      {adding ? (
+        <form onSubmit={handleAddCard}>
+          <textarea
+            value={cardTitle}
+            onChange={(e) => setCardTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleAddCard(e as unknown as FormEvent)
+              }
+              if (e.key === 'Escape') cancelAdd()
+            }}
+            placeholder="カードの内容を入力"
+            autoFocus
+            required
+            rows={2}
+            className="w-full px-2 py-1 rounded border border-slate-300 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+          />
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+            >
+              追加
+            </button>
+            <button
+              type="button"
+              onClick={cancelAdd}
+              className="text-sm text-slate-600 hover:text-slate-900"
+            >
+              キャンセル
+            </button>
+          </div>
+        </form>
+      ) : (
+        <button
+          onClick={() => setAdding(true)}
+          className="text-left text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-300 rounded px-2 py-1"
+        >
+          + カードを追加
+        </button>
+      )}
+
+      {editingCard && (
+        <CardDetailModal
+          boardId={boardId}
+          listId={list.id}
+          card={editingCard}
+          onClose={() => setEditingCardId(null)}
+        />
+      )}
     </div>
   )
 }
