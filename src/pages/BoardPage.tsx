@@ -1,16 +1,33 @@
-import { useState, type FormEvent } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import { arrayMove } from '@dnd-kit/sortable'
 import { useBoard } from '../hooks/useBoard'
 import { useLists } from '../hooks/useLists'
+import { useBoardCards } from '../hooks/useBoardCards'
 import { ListColumn } from '../features/lists/ListColumn'
 import { createList } from '../features/lists/api'
+import { moveCard, updateCard } from '../features/cards/api'
+import type { Card } from '../types'
 
 export function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>()
   const { board, loading: boardLoading } = useBoard(boardId)
   const { lists, loading: listsLoading } = useLists(boardId)
+  const listIds = useMemo(() => lists.map((l) => l.id), [lists])
+  const cardsByListId = useBoardCards(boardId, listIds)
   const [adding, setAdding] = useState(false)
   const [title, setTitle] = useState('')
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  )
 
   async function handleAdd(e: FormEvent) {
     e.preventDefault()
@@ -20,6 +37,81 @@ export function BoardPage() {
     await createList(boardId, title.trim(), nextOrder)
     setTitle('')
     setAdding(false)
+  }
+
+  async function handleDragEnd(e: DragEndEvent) {
+    if (!boardId) return
+    const { active, over } = e
+    if (!over) return
+
+    const activeData = active.data.current
+    const overData = over.data.current
+    if (activeData?.type !== 'card') return
+
+    const draggedCard = activeData.card as Card
+    const sourceListId = activeData.sourceListId as string
+
+    let targetListId: string
+    let targetIndex: number
+
+    if (overData?.type === 'card') {
+      targetListId = overData.sourceListId as string
+      const targetCards = cardsByListId[targetListId] ?? []
+      targetIndex = targetCards.findIndex((c) => c.id === over.id)
+      if (targetIndex === -1) targetIndex = targetCards.length
+    } else if (overData?.type === 'list') {
+      targetListId = overData.listId as string
+      targetIndex = (cardsByListId[targetListId] ?? []).length
+    } else {
+      return
+    }
+
+    if (sourceListId === targetListId) {
+      const sourceCards = cardsByListId[sourceListId] ?? []
+      const oldIndex = sourceCards.findIndex((c) => c.id === active.id)
+      if (oldIndex === -1 || oldIndex === targetIndex) return
+      const reordered = arrayMove(sourceCards, oldIndex, targetIndex)
+      await Promise.all(
+        reordered.map((card, index) =>
+          card.order === index
+            ? Promise.resolve()
+            : updateCard(boardId, sourceListId, card.id, { order: index }),
+        ),
+      )
+    } else {
+      await moveCard(
+        boardId,
+        sourceListId,
+        targetListId,
+        draggedCard,
+        targetIndex,
+      )
+
+      const sourceRemaining = (cardsByListId[sourceListId] ?? []).filter(
+        (c) => c.id !== draggedCard.id,
+      )
+      await Promise.all(
+        sourceRemaining.map((card, index) =>
+          card.order === index
+            ? Promise.resolve()
+            : updateCard(boardId, sourceListId, card.id, { order: index }),
+        ),
+      )
+
+      const targetExisting = cardsByListId[targetListId] ?? []
+      const targetWithNew = [
+        ...targetExisting.slice(0, targetIndex),
+        draggedCard,
+        ...targetExisting.slice(targetIndex),
+      ]
+      await Promise.all(
+        targetWithNew.map((card, index) => {
+          if (card.id === draggedCard.id) return Promise.resolve()
+          if (card.order === index) return Promise.resolve()
+          return updateCard(boardId, targetListId, card.id, { order: index })
+        }),
+      )
+    }
   }
 
   if (boardLoading || listsLoading) {
@@ -47,53 +139,60 @@ export function BoardPage() {
       </Link>
       <h1 className="text-2xl font-bold text-slate-800 mb-6">{board.title}</h1>
 
-      <div className="flex flex-col sm:flex-row gap-4 sm:overflow-x-auto pb-4 items-start">
-        {lists.map((list) => (
-          <ListColumn key={list.id} boardId={boardId!} list={list} />
-        ))}
-
-        {adding ? (
-          <form
-            onSubmit={handleAdd}
-            className="bg-slate-200 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0"
-          >
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="リスト名を入力"
-              autoFocus
-              required
-              className="w-full px-2 py-1 rounded border border-slate-300 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className="flex flex-col sm:flex-row gap-4 sm:overflow-x-auto pb-4 items-start">
+          {lists.map((list) => (
+            <ListColumn
+              key={list.id}
+              boardId={boardId!}
+              list={list}
+              cards={cardsByListId[list.id] ?? []}
             />
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
-              >
-                追加
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAdding(false)
-                  setTitle('')
-                }}
-                className="text-sm text-slate-600 hover:text-slate-900"
-              >
-                キャンセル
-              </button>
-            </div>
-          </form>
-        ) : (
-          <button
-            onClick={() => setAdding(true)}
-            className="bg-slate-200 hover:bg-slate-300 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0 text-left text-slate-600"
-          >
-            + リストを追加
-          </button>
-        )}
-      </div>
+          ))}
+
+          {adding ? (
+            <form
+              onSubmit={handleAdd}
+              className="bg-slate-200 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0"
+            >
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="リスト名を入力"
+                autoFocus
+                required
+                className="w-full px-2 py-1 rounded border border-slate-300 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
+                >
+                  追加
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdding(false)
+                    setTitle('')
+                  }}
+                  className="text-sm text-slate-600 hover:text-slate-900"
+                >
+                  キャンセル
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button
+              onClick={() => setAdding(true)}
+              className="bg-slate-200 hover:bg-slate-300 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0 text-left text-slate-600"
+            >
+              + リストを追加
+            </button>
+          )}
+        </div>
+      </DndContext>
     </div>
   )
 }

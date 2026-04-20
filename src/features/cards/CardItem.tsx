@@ -1,4 +1,6 @@
 import type { MouseEvent } from 'react'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { Card } from '../../types'
 import { deleteCard } from './api'
 
@@ -10,6 +12,24 @@ type Props = {
 }
 
 export function CardItem({ boardId, listId, card, onClick }: Props) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: card.id,
+    data: { type: 'card', card, sourceListId: listId },
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
   async function handleDelete(e: MouseEvent) {
     e.stopPropagation()
     if (!confirm('このカードを削除しますか？')) return
@@ -18,8 +38,12 @@ export function CardItem({ boardId, listId, card, onClick }: Props) {
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
       onClick={onClick}
-      className="bg-white rounded shadow-sm hover:shadow p-2 cursor-pointer group relative"
+      className="bg-white rounded shadow-sm hover:shadow p-2 cursor-pointer group relative touch-none"
     >
       {card.labels.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1">
@@ -37,6 +61,7 @@ export function CardItem({ boardId, listId, card, onClick }: Props) {
       <p className="text-sm text-slate-800 pr-5">{card.title}</p>
       <button
         onClick={handleDelete}
+        onPointerDown={(e) => e.stopPropagation()}
         aria-label="カード削除"
         className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center text-xs text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
       >

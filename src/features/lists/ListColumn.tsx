@@ -1,23 +1,32 @@
 import { useState, type FormEvent } from 'react'
+import { useDroppable } from '@dnd-kit/core'
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { deleteList, updateListTitle } from './api'
 import { createCard } from '../cards/api'
 import { CardItem } from '../cards/CardItem'
 import { CardDetailModal } from '../cards/CardDetailModal'
-import { useCards } from '../../hooks/useCards'
-import type { List } from '../../types'
+import type { Card, List } from '../../types'
 
 type Props = {
   boardId: string
   list: List
+  cards: Card[]
 }
 
-export function ListColumn({ boardId, list }: Props) {
+export function ListColumn({ boardId, list, cards }: Props) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(list.title)
   const [adding, setAdding] = useState(false)
   const [cardTitle, setCardTitle] = useState('')
   const [editingCardId, setEditingCardId] = useState<string | null>(null)
-  const { cards } = useCards(boardId, list.id)
+
+  const { setNodeRef } = useDroppable({
+    id: `list-${list.id}`,
+    data: { type: 'list', listId: list.id },
+  })
 
   const editingCard = editingCardId
     ? cards.find((c) => c.id === editingCardId) ?? null
@@ -90,17 +99,22 @@ export function ListColumn({ boardId, list }: Props) {
         </button>
       </div>
 
-      <div className="space-y-2 mb-2">
-        {cards.map((card) => (
-          <CardItem
-            key={card.id}
-            boardId={boardId}
-            listId={list.id}
-            card={card}
-            onClick={() => setEditingCardId(card.id)}
-          />
-        ))}
-      </div>
+      <SortableContext
+        items={cards.map((c) => c.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <div ref={setNodeRef} className="space-y-2 mb-2 min-h-[20px]">
+          {cards.map((card) => (
+            <CardItem
+              key={card.id}
+              boardId={boardId}
+              listId={list.id}
+              card={card}
+              onClick={() => setEditingCardId(card.id)}
+            />
+          ))}
+        </div>
+      </SortableContext>
 
       {adding ? (
         <form onSubmit={handleAddCard}>
