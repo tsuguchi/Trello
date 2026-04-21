@@ -75,7 +75,16 @@ export function BoardsPage() {
       )}
 
       {loading ? (
-        <p className="text-slate-500 text-center py-8">読み込み中...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-lg shadow p-4 animate-pulse"
+            >
+              <div className="h-5 bg-slate-200 rounded w-3/4" />
+            </div>
+          ))}
+        </div>
       ) : (
         <BoardList boards={boards} />
       )}

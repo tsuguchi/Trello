@@ -137,7 +137,35 @@ export function BoardPage() {
   }
 
   if (boardLoading || listsLoading) {
-    return <p className="text-slate-500">読み込み中...</p>
+    return (
+      <div>
+        <Link
+          to="/"
+          className="text-sm text-blue-600 hover:text-blue-800 inline-block mb-2"
+        >
+          ← ボード一覧に戻る
+        </Link>
+        <div className="h-8 bg-slate-200 rounded w-40 mb-6 animate-pulse" />
+        <div className="flex flex-col sm:flex-row gap-4 items-start">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-slate-200 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0"
+            >
+              <div className="h-6 bg-slate-300 rounded w-2/3 mb-3 animate-pulse" />
+              <div className="space-y-2">
+                {Array.from({ length: 3 }).map((_, j) => (
+                  <div
+                    key={j}
+                    className="h-12 bg-white rounded shadow-sm animate-pulse"
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   if (!board) {

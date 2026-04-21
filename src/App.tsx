@@ -12,7 +12,7 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <p className="text-slate-500">読み込み中...</p>
+        <div className="w-10 h-10 border-4 border-slate-300 border-t-blue-600 rounded-full animate-spin" />
       </div>
     )
   }
