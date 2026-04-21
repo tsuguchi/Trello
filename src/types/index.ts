@@ -12,6 +12,14 @@ export type ChecklistItem = {
   checked: boolean
 }
 
+export type Comment = {
+  id: string
+  text: string
+  authorId: string
+  authorName: string
+  createdAt: Timestamp
+}
+
 export type User = {
   uid: string
   email: string
@@ -39,6 +47,7 @@ export type Card = {
   dueDate: Timestamp | null
   labels: Label[]
   checklist?: ChecklistItem[]
+  comments?: Comment[]
   order: number
   createdAt: Timestamp
 }

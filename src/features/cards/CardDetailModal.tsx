@@ -1,10 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { Timestamp } from 'firebase/firestore'
 import { updateCard } from './api'
 import {
   formatDueDateInput,
   parseDueDateInput,
 } from './dueDate'
-import type { Card, ChecklistItem, Label } from '../../types'
+import { useAuth } from '../../hooks/useAuth'
+import type { Card, ChecklistItem, Comment, Label } from '../../types'
 
 const PREDEFINED_LABELS: Label[] = [
   { id: 'red', name: '緊急', color: '#ef4444' },
@@ -23,14 +25,17 @@ type Props = {
 }
 
 export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
+  const { user } = useAuth()
   const [title, setTitle] = useState(card.title)
   const [description, setDescription] = useState(card.description)
   const [newItemText, setNewItemText] = useState('')
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [itemDraft, setItemDraft] = useState('')
+  const [commentText, setCommentText] = useState('')
 
   const checklist = card.checklist ?? []
   const completedCount = checklist.filter((i) => i.checked).length
+  const comments = card.comments ?? []
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -115,6 +120,38 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
       await updateCard(boardId, listId, card.id, { checklist: newList })
     }
     setEditingItemId(null)
+  }
+
+  async function handleAddComment(e: FormEvent) {
+    e.preventDefault()
+    if (!user) return
+    const trimmed = commentText.trim()
+    if (!trimmed) return
+    const newComment: Comment = {
+      id: crypto.randomUUID(),
+      text: trimmed,
+      authorId: user.uid,
+      authorName: user.displayName || user.email || '名無し',
+      createdAt: Timestamp.now(),
+    }
+    await updateCard(boardId, listId, card.id, {
+      comments: [...comments, newComment],
+    })
+    setCommentText('')
+  }
+
+  async function deleteComment(commentId: string) {
+    const newComments = comments.filter((c) => c.id !== commentId)
+    await updateCard(boardId, listId, card.id, { comments: newComments })
+  }
+
+  function formatCommentDate(ts: Timestamp): string {
+    const d = ts.toDate()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const h = String(d.getHours()).padStart(2, '0')
+    const min = String(d.getMinutes()).padStart(2, '0')
+    return `${m}/${day} ${h}:${min}`
   }
 
   return (
@@ -258,7 +295,7 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
           </form>
         </div>
 
-        <div>
+        <div className="mb-4">
           <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">説明</h4>
           <textarea
             value={description}
@@ -268,6 +305,65 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
             rows={5}
             className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
+        </div>
+
+        <div>
+          <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">
+            コメント
+            {comments.length > 0 && (
+              <span className="ml-2 text-xs font-normal text-slate-400 dark:text-slate-500">
+                {comments.length}件
+              </span>
+            )}
+          </h4>
+          <div className="space-y-3 mb-3">
+            {comments.map((comment) => (
+              <div key={comment.id} className="group">
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    {comment.authorName}
+                  </span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">
+                    {formatCommentDate(comment.createdAt)}
+                  </span>
+                  {user?.uid === comment.authorId && (
+                    <button
+                      onClick={() => deleteComment(comment.id)}
+                      aria-label="コメント削除"
+                      className="ml-auto opacity-0 group-hover:opacity-100 text-xs text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400"
+                    >
+                      削除
+                    </button>
+                  )}
+                </div>
+                <p className="text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap">
+                  {comment.text}
+                </p>
+              </div>
+            ))}
+          </div>
+          <form onSubmit={handleAddComment} className="flex flex-col gap-2">
+            <textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault()
+                  handleAddComment(e as unknown as FormEvent)
+                }
+              }}
+              placeholder="コメントを追加（Ctrl+Enter で送信）"
+              rows={2}
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+            />
+            <button
+              type="submit"
+              disabled={!commentText.trim()}
+              className="self-end bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 disabled:bg-slate-400 dark:disabled:bg-slate-600"
+            >
+              送信
+            </button>
+          </form>
         </div>
       </div>
     </div>

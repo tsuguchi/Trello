@@ -72,7 +72,9 @@ export function CardItem({ boardId, listId, card, onClick }: Props) {
           </div>
         )}
         <p className="text-sm text-slate-800 dark:text-slate-100 pr-5">{card.title}</p>
-        {(card.dueDate || (card.checklist && card.checklist.length > 0)) && (
+        {(card.dueDate ||
+          (card.checklist && card.checklist.length > 0) ||
+          (card.comments && card.comments.length > 0)) && (
           <div className="flex flex-wrap gap-1 mt-1">
             {card.dueDate && (
               <span
@@ -86,6 +88,11 @@ export function CardItem({ boardId, listId, card, onClick }: Props) {
             {card.checklist && card.checklist.length > 0 && (
               <span className="inline-block px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                 ✓ {card.checklist.filter((i) => i.checked).length}/{card.checklist.length}
+              </span>
+            )}
+            {card.comments && card.comments.length > 0 && (
+              <span className="inline-block px-2 py-0.5 text-xs rounded bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                コメント {card.comments.length}
               </span>
             )}
           </div>
