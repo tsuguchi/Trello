@@ -8,7 +8,7 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import { db } from '../../lib/firebase'
-import type { Card, Label } from '../../types'
+import type { Card, ChecklistItem, Label } from '../../types'
 
 export async function createCard(
   boardId: string,
@@ -23,6 +23,7 @@ export async function createCard(
       description: '',
       dueDate: null,
       labels: [],
+      checklist: [],
       order,
       createdAt: serverTimestamp(),
     },
@@ -45,6 +46,7 @@ type CardUpdates = {
   labels?: Label[]
   order?: number
   dueDate?: Date | null
+  checklist?: ChecklistItem[]
 }
 
 export async function updateCard(
@@ -90,6 +92,7 @@ export async function moveCard(
     description: card.description,
     dueDate: card.dueDate,
     labels: card.labels,
+    checklist: card.checklist ?? [],
     order: newOrder,
     createdAt: card.createdAt,
   })

@@ -6,6 +6,12 @@ export type Label = {
   color: string
 }
 
+export type ChecklistItem = {
+  id: string
+  text: string
+  checked: boolean
+}
+
 export type User = {
   uid: string
   email: string
@@ -32,6 +38,7 @@ export type Card = {
   description: string
   dueDate: Timestamp | null
   labels: Label[]
+  checklist?: ChecklistItem[]
   order: number
   createdAt: Timestamp
 }

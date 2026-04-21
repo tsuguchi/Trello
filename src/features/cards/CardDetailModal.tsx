@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { updateCard } from './api'
 import {
   formatDueDateInput,
   parseDueDateInput,
 } from './dueDate'
-import type { Card, Label } from '../../types'
+import type { Card, ChecklistItem, Label } from '../../types'
 
 const PREDEFINED_LABELS: Label[] = [
   { id: 'red', name: '緊急', color: '#ef4444' },
@@ -25,6 +25,12 @@ type Props = {
 export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
   const [title, setTitle] = useState(card.title)
   const [description, setDescription] = useState(card.description)
+  const [newItemText, setNewItemText] = useState('')
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [itemDraft, setItemDraft] = useState('')
+
+  const checklist = card.checklist ?? []
+  const completedCount = checklist.filter((i) => i.checked).length
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -64,6 +70,51 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
 
   async function clearDueDate() {
     await updateCard(boardId, listId, card.id, { dueDate: null })
+  }
+
+  async function handleAddItem(e: FormEvent) {
+    e.preventDefault()
+    const trimmed = newItemText.trim()
+    if (!trimmed) return
+    const newItem: ChecklistItem = {
+      id: crypto.randomUUID(),
+      text: trimmed,
+      checked: false,
+    }
+    await updateCard(boardId, listId, card.id, {
+      checklist: [...checklist, newItem],
+    })
+    setNewItemText('')
+  }
+
+  async function toggleItem(itemId: string) {
+    const newList = checklist.map((i) =>
+      i.id === itemId ? { ...i, checked: !i.checked } : i,
+    )
+    await updateCard(boardId, listId, card.id, { checklist: newList })
+  }
+
+  async function deleteItem(itemId: string) {
+    const newList = checklist.filter((i) => i.id !== itemId)
+    await updateCard(boardId, listId, card.id, { checklist: newList })
+  }
+
+  function startEditItem(item: ChecklistItem) {
+    setEditingItemId(item.id)
+    setItemDraft(item.text)
+  }
+
+  async function commitItemEdit() {
+    if (!editingItemId) return
+    const trimmed = itemDraft.trim()
+    const original = checklist.find((i) => i.id === editingItemId)
+    if (trimmed && original && trimmed !== original.text) {
+      const newList = checklist.map((i) =>
+        i.id === editingItemId ? { ...i, text: trimmed } : i,
+      )
+      await updateCard(boardId, listId, card.id, { checklist: newList })
+    }
+    setEditingItemId(null)
   }
 
   return (
@@ -135,6 +186,76 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
               </button>
             )}
           </div>
+        </div>
+
+        <div className="mb-4">
+          <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">
+            チェックリスト
+            {checklist.length > 0 && (
+              <span className="ml-2 text-xs font-normal text-slate-400 dark:text-slate-500">
+                {completedCount}/{checklist.length}
+              </span>
+            )}
+          </h4>
+          <div className="space-y-1 mb-2">
+            {checklist.map((item) => (
+              <div key={item.id} className="flex items-center gap-2 group">
+                <input
+                  type="checkbox"
+                  checked={item.checked}
+                  onChange={() => toggleItem(item.id)}
+                  className="w-4 h-4 rounded cursor-pointer"
+                />
+                {editingItemId === item.id ? (
+                  <input
+                    type="text"
+                    value={itemDraft}
+                    onChange={(e) => setItemDraft(e.target.value)}
+                    onBlur={commitItemEdit}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') commitItemEdit()
+                      if (e.key === 'Escape') setEditingItemId(null)
+                    }}
+                    autoFocus
+                    className="flex-1 px-2 py-1 text-sm rounded border border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none"
+                  />
+                ) : (
+                  <span
+                    onClick={() => startEditItem(item)}
+                    className={`flex-1 text-sm cursor-pointer ${
+                      item.checked
+                        ? 'line-through text-slate-400 dark:text-slate-500'
+                        : 'text-slate-800 dark:text-slate-200'
+                    }`}
+                  >
+                    {item.text}
+                  </span>
+                )}
+                <button
+                  onClick={() => deleteItem(item.id)}
+                  aria-label="項目を削除"
+                  className="opacity-0 group-hover:opacity-100 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 text-xs px-1"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+          <form onSubmit={handleAddItem} className="flex gap-2">
+            <input
+              type="text"
+              value={newItemText}
+              onChange={(e) => setNewItemText(e.target.value)}
+              placeholder="項目を追加"
+              className="flex-1 px-3 py-1 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+            >
+              追加
+            </button>
+          </form>
         </div>
 
         <div>
