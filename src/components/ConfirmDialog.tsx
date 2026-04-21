@@ -40,13 +40,13 @@ export function ConfirmDialog({
     >
       <div
         onClick={stop}
-        className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full"
+        className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 max-w-sm w-full"
       >
-        <p className="text-slate-800 mb-6">{message}</p>
+        <p className="text-slate-800 dark:text-slate-100 mb-6">{message}</p>
         <div className="flex gap-2 justify-end">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-slate-600 hover:text-slate-900"
+            className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
           >
             {cancelLabel}
           </button>

@@ -35,10 +35,10 @@ export function getDueStatus(ts: Timestamp): DueStatus {
 export function getDueBadgeClass(status: DueStatus): string {
   switch (status) {
     case 'overdue':
-      return 'bg-red-100 text-red-700'
+      return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
     case 'today':
-      return 'bg-yellow-100 text-yellow-800'
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200'
     case 'upcoming':
-      return 'bg-slate-100 text-slate-600'
+      return 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
   }
 }

@@ -26,7 +26,7 @@ export function BoardList({ boards }: Props) {
 
   if (boards.length === 0) {
     return (
-      <p className="text-slate-500 text-center py-8">
+      <p className="text-slate-500 dark:text-slate-400 text-center py-8">
         まだボードがありません。作成してみましょう。
       </p>
     )
@@ -39,13 +39,13 @@ export function BoardList({ boards }: Props) {
           <div
             key={board.id}
             onClick={() => navigate(`/boards/${board.id}`)}
-            className="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-4 cursor-pointer group relative"
+            className="bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-md transition-shadow p-4 cursor-pointer group relative"
           >
-            <h2 className="font-semibold text-slate-800">{board.title}</h2>
+            <h2 className="font-semibold text-slate-800 dark:text-slate-100">{board.title}</h2>
             <button
               onClick={(e) => requestDelete(e, board.id)}
               aria-label="削除"
-              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
             >
               ✕
             </button>

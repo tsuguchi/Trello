@@ -141,23 +141,23 @@ export function BoardPage() {
       <div>
         <Link
           to="/"
-          className="text-sm text-blue-600 hover:text-blue-800 inline-block mb-2"
+          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 inline-block mb-2"
         >
           ← ボード一覧に戻る
         </Link>
-        <div className="h-8 bg-slate-200 rounded w-40 mb-6 animate-pulse" />
+        <div className="h-8 bg-slate-200 dark:bg-slate-700 rounded w-40 mb-6 animate-pulse" />
         <div className="flex flex-col sm:flex-row gap-4 items-start">
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="bg-slate-200 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0"
+              className="bg-slate-200 dark:bg-slate-800 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0"
             >
-              <div className="h-6 bg-slate-300 rounded w-2/3 mb-3 animate-pulse" />
+              <div className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-2/3 mb-3 animate-pulse" />
               <div className="space-y-2">
                 {Array.from({ length: 3 }).map((_, j) => (
                   <div
                     key={j}
-                    className="h-12 bg-white rounded shadow-sm animate-pulse"
+                    className="h-12 bg-white dark:bg-slate-900 rounded shadow-sm animate-pulse"
                   />
                 ))}
               </div>
@@ -171,10 +171,10 @@ export function BoardPage() {
   if (!board) {
     return (
       <div>
-        <Link to="/" className="text-sm text-blue-600 hover:text-blue-800">
+        <Link to="/" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
           ← ボード一覧に戻る
         </Link>
-        <p className="text-slate-500 mt-4">ボードが見つかりません。</p>
+        <p className="text-slate-500 dark:text-slate-400 mt-4">ボードが見つかりません。</p>
       </div>
     )
   }
@@ -183,18 +183,18 @@ export function BoardPage() {
     <div>
       <Link
         to="/"
-        className="text-sm text-blue-600 hover:text-blue-800 inline-block mb-2"
+        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 inline-block mb-2"
       >
         ← ボード一覧に戻る
       </Link>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">{board.title}</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{board.title}</h1>
         <input
           type="search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="カードを検索"
-          className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full sm:w-64"
+          className="px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full sm:w-64"
         />
       </div>
 
@@ -215,7 +215,7 @@ export function BoardPage() {
           {adding ? (
             <form
               onSubmit={handleAdd}
-              className="bg-slate-200 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0"
+              className="bg-slate-200 dark:bg-slate-800 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0"
             >
               <input
                 type="text"
@@ -224,7 +224,7 @@ export function BoardPage() {
                 placeholder="リスト名を入力"
                 autoFocus
                 required
-                className="w-full px-2 py-1 rounded border border-slate-300 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <div className="flex gap-2">
                 <button
@@ -239,7 +239,7 @@ export function BoardPage() {
                     setAdding(false)
                     setTitle('')
                   }}
-                  className="text-sm text-slate-600 hover:text-slate-900"
+                  className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
                 >
                   キャンセル
                 </button>
@@ -248,7 +248,7 @@ export function BoardPage() {
           ) : (
             <button
               onClick={() => setAdding(true)}
-              className="bg-slate-200 hover:bg-slate-300 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0 text-left text-slate-600"
+              className="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0 text-left text-slate-600 dark:text-slate-300"
             >
               + リストを追加
             </button>

@@ -93,7 +93,7 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-slate-200 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0 flex flex-col"
+      className="bg-slate-200 dark:bg-slate-800 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0 flex flex-col"
     >
       <div
         {...attributes}
@@ -112,12 +112,12 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
             }}
             onPointerDown={(e) => e.stopPropagation()}
             autoFocus
-            className="flex-1 px-2 py-1 rounded border border-blue-500 focus:outline-none cursor-text"
+            className="flex-1 px-2 py-1 rounded border border-blue-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none cursor-text"
           />
         ) : (
           <h3
             onClick={startEdit}
-            className="font-semibold text-slate-800 px-2 py-1 flex-1"
+            className="font-semibold text-slate-800 dark:text-slate-100 px-2 py-1 flex-1"
           >
             {list.title}
           </h3>
@@ -126,7 +126,7 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
           onClick={() => setConfirmingDelete(true)}
           onPointerDown={(e) => e.stopPropagation()}
           aria-label="リスト削除"
-          className="text-slate-400 hover:text-red-600 px-1 py-1"
+          className="text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 px-1 py-1"
         >
           ✕
         </button>
@@ -165,7 +165,7 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
             autoFocus
             required
             rows={2}
-            className="w-full px-2 py-1 rounded border border-slate-300 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+            className="w-full px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 mb-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
           />
           <div className="flex gap-2">
             <button
@@ -177,7 +177,7 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
             <button
               type="button"
               onClick={cancelAdd}
-              className="text-sm text-slate-600 hover:text-slate-900"
+              className="text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
             >
               キャンセル
             </button>
@@ -186,7 +186,7 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
       ) : (
         <button
           onClick={() => setAdding(true)}
-          className="text-left text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-300 rounded px-2 py-1"
+          className="text-left text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-700 rounded px-2 py-1"
         >
           + カードを追加
         </button>

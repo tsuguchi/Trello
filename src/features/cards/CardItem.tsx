@@ -56,7 +56,7 @@ export function CardItem({ boardId, listId, card, onClick }: Props) {
         {...attributes}
         {...listeners}
         onClick={onClick}
-        className="bg-white rounded shadow-sm hover:shadow p-2 cursor-pointer group relative touch-none"
+        className="bg-white dark:bg-slate-900 rounded shadow-sm hover:shadow p-2 cursor-pointer group relative touch-none"
       >
         {card.labels.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-1">
@@ -71,7 +71,7 @@ export function CardItem({ boardId, listId, card, onClick }: Props) {
             ))}
           </div>
         )}
-        <p className="text-sm text-slate-800 pr-5">{card.title}</p>
+        <p className="text-sm text-slate-800 dark:text-slate-100 pr-5">{card.title}</p>
         {card.dueDate && (
           <span
             className={`inline-block mt-1 px-2 py-0.5 text-xs rounded ${getDueBadgeClass(
@@ -85,7 +85,7 @@ export function CardItem({ boardId, listId, card, onClick }: Props) {
           onClick={requestDelete}
           onPointerDown={(e) => e.stopPropagation()}
           aria-label="カード削除"
-          className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center text-xs text-slate-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center text-xs text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
         >
           ✕
         </button>

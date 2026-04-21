@@ -32,7 +32,7 @@ export function BoardsPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">マイボード</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">マイボード</h1>
         {!creating && (
           <button
             onClick={() => setCreating(true)}
@@ -46,7 +46,7 @@ export function BoardsPage() {
       {creating && (
         <form
           onSubmit={handleCreate}
-          className="bg-white rounded-lg shadow p-4 mb-6 flex gap-2"
+          className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 mb-6 flex gap-2"
         >
           <input
             type="text"
@@ -55,7 +55,7 @@ export function BoardsPage() {
             placeholder="ボード名を入力"
             autoFocus
             required
-            className="flex-1 px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             type="submit"
@@ -67,7 +67,7 @@ export function BoardsPage() {
           <button
             type="button"
             onClick={handleCancel}
-            className="px-4 py-2 text-slate-600 hover:text-slate-900"
+            className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100"
           >
             キャンセル
           </button>
@@ -79,9 +79,9 @@ export function BoardsPage() {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white rounded-lg shadow p-4 animate-pulse"
+              className="bg-white dark:bg-slate-800 rounded-lg shadow p-4 animate-pulse"
             >
-              <div className="h-5 bg-slate-200 rounded w-3/4" />
+              <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
             </div>
           ))}
         </div>

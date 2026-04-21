@@ -73,7 +73,7 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white rounded-lg shadow-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-slate-800 rounded-lg shadow-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
       >
         <div className="flex justify-between items-start gap-2 mb-4">
           <input
@@ -84,19 +84,19 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
             onKeyDown={(e) => {
               if (e.key === 'Enter') e.currentTarget.blur()
             }}
-            className="flex-1 text-lg font-semibold text-slate-800 px-2 py-1 rounded hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            className="flex-1 text-lg font-semibold text-slate-800 dark:text-slate-100 px-2 py-1 rounded hover:bg-slate-50 dark:hover:bg-slate-700 focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
           />
           <button
             onClick={onClose}
             aria-label="閉じる"
-            className="text-slate-400 hover:text-slate-600 px-2 py-1"
+            className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 px-2 py-1"
           >
             ✕
           </button>
         </div>
 
         <div className="mb-4">
-          <h4 className="text-sm font-semibold text-slate-600 mb-2">ラベル</h4>
+          <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">ラベル</h4>
           <div className="flex flex-wrap gap-2">
             {PREDEFINED_LABELS.map((label) => {
               const active = card.labels.some((l) => l.id === label.id)
@@ -117,19 +117,19 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
         </div>
 
         <div className="mb-4">
-          <h4 className="text-sm font-semibold text-slate-600 mb-2">期日</h4>
+          <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">期日</h4>
           <div className="flex gap-2">
             <input
               type="date"
               value={formatDueDateInput(card.dueDate)}
               onChange={(e) => changeDueDate(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
             />
             {card.dueDate && (
               <button
                 type="button"
                 onClick={clearDueDate}
-                className="text-sm text-slate-500 hover:text-red-600"
+                className="text-sm text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400"
               >
                 削除
               </button>
@@ -138,14 +138,14 @@ export function CardDetailModal({ boardId, listId, card, onClose }: Props) {
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold text-slate-600 mb-2">説明</h4>
+          <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">説明</h4>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             onBlur={saveDescription}
             placeholder="説明を追加"
             rows={5}
-            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
           />
         </div>
       </div>
