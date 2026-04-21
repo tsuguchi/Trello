@@ -7,12 +7,16 @@ import {
   useSensors,
   type DragEndEvent,
 } from '@dnd-kit/core'
-import { arrayMove } from '@dnd-kit/sortable'
+import {
+  arrayMove,
+  SortableContext,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable'
 import { useBoard } from '../hooks/useBoard'
 import { useLists } from '../hooks/useLists'
 import { useBoardCards } from '../hooks/useBoardCards'
 import { ListColumn } from '../features/lists/ListColumn'
-import { createList } from '../features/lists/api'
+import { createList, updateListOrder } from '../features/lists/api'
 import { moveCard, updateCard } from '../features/cards/api'
 import type { Card } from '../types'
 
@@ -47,6 +51,23 @@ export function BoardPage() {
 
     const activeData = active.data.current
     const overData = over.data.current
+
+    if (activeData?.type === 'list') {
+      if (active.id === over.id) return
+      const oldIndex = lists.findIndex((l) => l.id === active.id)
+      const newIndex = lists.findIndex((l) => l.id === over.id)
+      if (oldIndex === -1 || newIndex === -1) return
+      const reordered = arrayMove(lists, oldIndex, newIndex)
+      await Promise.all(
+        reordered.map((list, index) =>
+          list.order === index
+            ? Promise.resolve()
+            : updateListOrder(boardId, list.id, index),
+        ),
+      )
+      return
+    }
+
     if (activeData?.type !== 'card') return
 
     const draggedCard = activeData.card as Card
@@ -151,15 +172,17 @@ export function BoardPage() {
 
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="flex flex-col sm:flex-row gap-4 sm:overflow-x-auto pb-4 items-start">
-          {lists.map((list) => (
-            <ListColumn
-              key={list.id}
-              boardId={boardId!}
-              list={list}
-              cards={cardsByListId[list.id] ?? []}
-              searchTerm={searchTerm}
-            />
-          ))}
+          <SortableContext items={listIds} strategy={rectSortingStrategy}>
+            {lists.map((list) => (
+              <ListColumn
+                key={list.id}
+                boardId={boardId!}
+                list={list}
+                cards={cardsByListId[list.id] ?? []}
+                searchTerm={searchTerm}
+              />
+            ))}
+          </SortableContext>
 
           {adding ? (
             <form

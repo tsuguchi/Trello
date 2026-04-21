@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import { useDroppable } from '@dnd-kit/core'
+import { useSortable } from '@dnd-kit/sortable'
 import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { deleteList, updateListTitle } from './api'
 import { createCard } from '../cards/api'
 import { CardItem } from '../cards/CardItem'
@@ -32,10 +33,23 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
   const [editingCardId, setEditingCardId] = useState<string | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
 
-  const { setNodeRef } = useDroppable({
-    id: `list-${list.id}`,
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: list.id,
     data: { type: 'list', listId: list.id },
   })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
 
   const editingCard = editingCardId
     ? cards.find((c) => c.id === editingCardId) ?? null
@@ -76,8 +90,16 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
   }
 
   return (
-    <div className="bg-slate-200 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0 flex flex-col">
-      <div className="flex items-start justify-between mb-3">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-slate-200 rounded-lg p-3 w-full sm:w-72 sm:flex-shrink-0 flex flex-col"
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="flex items-start justify-between mb-3 cursor-grab active:cursor-grabbing"
+      >
         {editing ? (
           <input
             type="text"
@@ -88,19 +110,21 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
               if (e.key === 'Enter') commitEdit()
               if (e.key === 'Escape') setEditing(false)
             }}
+            onPointerDown={(e) => e.stopPropagation()}
             autoFocus
-            className="flex-1 px-2 py-1 rounded border border-blue-500 focus:outline-none"
+            className="flex-1 px-2 py-1 rounded border border-blue-500 focus:outline-none cursor-text"
           />
         ) : (
           <h3
             onClick={startEdit}
-            className="font-semibold text-slate-800 px-2 py-1 cursor-pointer flex-1"
+            className="font-semibold text-slate-800 px-2 py-1 flex-1"
           >
             {list.title}
           </h3>
         )}
         <button
           onClick={() => setConfirmingDelete(true)}
+          onPointerDown={(e) => e.stopPropagation()}
           aria-label="リスト削除"
           className="text-slate-400 hover:text-red-600 px-1 py-1"
         >
@@ -112,10 +136,7 @@ export function ListColumn({ boardId, list, cards, searchTerm = '' }: Props) {
         items={visibleCards.map((c) => c.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div
-          ref={setNodeRef}
-          className="space-y-2 mb-2 min-h-[20px] sm:max-h-[60vh] sm:overflow-y-auto sm:pr-1"
-        >
+        <div className="space-y-2 mb-2 min-h-[20px] sm:max-h-[60vh] sm:overflow-y-auto sm:pr-1">
           {visibleCards.map((card) => (
             <CardItem
               key={card.id}

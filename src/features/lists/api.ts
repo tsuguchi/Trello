@@ -29,3 +29,11 @@ export async function updateListTitle(
 ) {
   await updateDoc(doc(db, 'boards', boardId, 'lists', listId), { title })
 }
+
+export async function updateListOrder(
+  boardId: string,
+  listId: string,
+  order: number,
+) {
+  await updateDoc(doc(db, 'boards', boardId, 'lists', listId), { order })
+}
